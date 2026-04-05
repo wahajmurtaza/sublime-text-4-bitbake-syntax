@@ -1,0 +1,183 @@
+%YAML 1.2
+---
+name: BitBake
+file_extensions: [bb, bbappend, bbclass, conf, inc]
+scope: source.bitbake
+
+contexts:
+  main:
+    - include: comments
+    - include: function_definitions
+    - include: variable_assignments
+    - include: sharing_functionality
+    - include: task_modification
+    - include: strings
+
+    # Highlight anything uncaptured
+    - match: '\S'
+      scope: invalid.illegal.bitbake
+
+  comments:
+    - match: '^\s*#.*$'
+      scope: comment.line.number-sign.bitbake
+
+  function_definitions:
+    - match: '^(def)\s+(\S+)\s*\(.*\)\s*:\s*$'
+    # - match: '^\s*(def)\s+(\w+)\s*\(.*\)\s*:\s*$'
+      captures:
+        1: storage.type.function.bitbake
+        2: entity.name.function.bitbake
+      # scope: meta.function.python.bitbake
+      set: Packages/Python/Python.sublime-syntax
+      with_prototype:
+      - match: '^(?=\S+)'
+        pop: true
+
+    # - match: '^\s*(python)\s+(\w+)?\s*\(\)\s*{'
+    #   captures:
+    #     1: storage.type.function.bitbake
+    #     2: entity.name.function.bitbake
+    #   scope: meta.function.python.bitbake
+    #   set: Packages/Python/Python.sublime-syntax
+    #   with_prototype:
+    #   - match: '}(?=\s*)$'
+    #     pop: true
+    #   push:
+    #     - meta_scope: meta.function.python.bitbake
+    #     - match: '^\s*}'
+    #       pop: true
+
+    # - match: '^\s*(\w+)\s*\(\)\s*{'
+    - match: '^(\S+)\s*\(\)\s*{'
+      captures:
+        1: entity.name.function.bitbake
+      set: Packages/ShellScript/Shell-Unix-Generic.sublime-syntax
+      # with_prototype:
+      # - match: '}(?=\s*)$'
+        # pop: true
+      # push:
+      #   - meta_scope: meta.function.shell.bitbake
+      #   - match: '^\s*}'
+      #     pop: true
+
+  variable_assignments:
+    - match: '^\s*(?:(export)\s+)?(\S+)\s*((\?\?\=|\?\=|\:\=|\+\=|\=\+|\.\=|\=\.|\=))'
+    # - match: '^\s*(export\s+)?(\w+(?::\w+)?(?:_\w+)?)(\s*(\?\?\=|\?\=|\:\=|\+\=|\=\+|\.\=|\=\.|\=))'
+    # - match: '^\s*(export\s+)?(\w+)\s*(\?\?\=|\?\=|\:\=|\+\=|\=\+|\.\=|\=\.|\=)'
+      captures:
+        1: storage.modifier.bitbake
+        2: variable.other.bitbake
+        3: keyword.operator.assignment.bitbake
+      push:
+        - meta_scope: meta.assignment.bitbake
+        - include: strings
+        - match: '\n'
+          pop: true
+
+
+
+  sharing_functionality:
+    - match: '^\s*\b(inherit|include|require)\b'
+      scope: keyword.control.import.bitbake
+      push: sharing_functionality_scope
+
+  task_modification:
+    - match: '^\s*\b(addtask|deltask)\b'
+      scope: keyword.control.conditional.bitbake
+      push: task_modification_scope
+
+# ------------------------------------------------------------------------------
+
+  variable_assignment_scope:
+    - include: strings
+    - match: '\n'
+      pop: true
+
+  sharing_functionality_scope:
+    - match: '\n'
+      pop: true
+
+  task_modification_scope:
+    - match: '\b(before|after)\b'
+      scope: keyword.control.conditional.bitbake
+    - match: '\n'
+      pop: true
+
+  strings:
+    - match: "'"
+      scope: punctuation.definition.string.begin.bitbake
+      push: string_single_quoted
+
+    - match: '"'
+      scope: punctuation.definition.string.begin.bitbake
+      push: string_double_quoted
+
+  string_single_quoted:
+    - meta_scope: string.quoted.single.bitbake
+    - include: string_escaped_char
+    - match: "'"
+      scope: punctuation.definition.string.end
+      pop: true
+
+  string_double_quoted:
+    - meta_scope: string.quoted.double.bitbake
+    - include: string_escaped_char
+    - match: '"'
+      scope: punctuation.definition.string.end
+      pop: true
+
+  string_escaped_char:
+    - match: '\\(.|\n)'
+      scope: constant.character.escape.bitbake
+
+
+
+
+
+
+
+
+
+
+  # sharing_functionality:
+  #   - match: '^\s*\b(inherit|include|require)\b'
+  #     scope: keyword.control.import.bitbake
+  #     push:
+  #       - meta_scope: meta.import.bitbake
+  #       - match: '\n'
+  #         pop: true
+
+  # task_modification:
+  #   - match: '^\s*\b(addtask|deltask)\b'
+  #     scope: keyword.control.task.bitbake
+  #     push:
+  #       - meta_scope: meta.task.bitbake
+  #       - match: '\b(before|after)\b'
+  #         scope: keyword.control.flow.bitbake
+  #       - match: '\n'
+  #         pop: true
+
+  # strings:
+  #   - match: "'"
+  #     scope: punctuation.definition.string.begin.bitbake
+  #     push: string_single
+
+  #   - match: '"'
+  #     scope: punctuation.definition.string.begin.bitbake
+  #     push: string_double
+
+  # string_single:
+  #   - meta_scope: string.quoted.single.bitbake
+  #   - match: "\\."
+  #     scope: constant.character.escape.bitbake
+  #   - match: "'"
+  #     scope: punctuation.definition.string.end.bitbake
+  #     pop: true
+
+  # string_double:
+  #   - meta_scope: string.quoted.double.bitbake
+  #   - match: "\\."
+  #     scope: constant.character.escape.bitbake
+  #   - match: '"'
+  #     scope: punctuation.definition.string.end.bitbake
+  #     pop: true
